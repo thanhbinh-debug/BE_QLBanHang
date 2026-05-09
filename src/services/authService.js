@@ -19,32 +19,50 @@ const login = async (username, password) => {
 };
 
 // Hàm đăng ký mới cho bạn
-const register = async (userData) => {
-  const { username, password, name, email, role } = userData;
+// const register = async (userData) => {
+//   const { username, password, name, email, role } = userData;
 
-  // 1. Kiểm tra xem username đã tồn tại chưa
-  const existingUser = await User.findOne({ where: { username } });
-  if (existingUser) throw new Error("Tên đăng nhập đã tồn tại");
+//   // 1. Kiểm tra xem username đã tồn tại chưa
+//   const existingUser = await User.findOne({ where: { username } });
+//   if (existingUser) throw new Error("Tên đăng nhập đã tồn tại");
 
-  // 2. Mã hóa mật khẩu
-  const salt = await bcrypt.genSalt(10);
-  const hashedPassword = await bcrypt.hash(password, salt);
+//   // 2. Mã hóa mật khẩu
+//   const salt = await bcrypt.genSalt(10);
+//   const hashedPassword = await bcrypt.hash(password, salt);
 
-  // 3. Tạo user mới trong database
-  const newUser = await User.create({
-    username,
-    password: hashedPassword,
+//   // 3. Tạo user mới trong database
+//   const newUser = await User.create({
+//     username,
+//     password: hashedPassword,
+//     name,
+//     email,
+//     role: role || "user", // Mặc định là 'user' nếu bạn không gửi role lên
+//     isActive: true,
+//   });
+
+//   return {
+//     id: newUser.id,
+//     username: newUser.username,
+//     name: newUser.name,
+//   };
+// };
+
+const register = async ({ name, username, password }) => {
+  // Check username taken
+  const exists = await User.findOne({ where: { username } });
+  if (exists) throw new Error("Username đã tồn tại");
+
+  const hashed = await bcrypt.hash(password, 10);
+
+  // New accounts always start as 'cashier' — role can be upgraded by admin later
+  const user = await User.create({
     name,
-    email,
-    role: role || "user", // Mặc định là 'user' nếu bạn không gửi role lên
-    isActive: true,
+    username,
+    password: hashed,
+    role: "user",
   });
 
-  return {
-    id: newUser.id,
-    username: newUser.username,
-    name: newUser.name,
-  };
+  return { id: user.id, name: user.name, role: user.role };
 };
 
 module.exports = { login, register };

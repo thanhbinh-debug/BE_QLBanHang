@@ -14,7 +14,7 @@ const storage = multer.diskStorage({
 const upload = multer({ storage });
 
 router.use(auth);
-router.get("/low-stock", ctrl.getLowStock); // cảnh báo sắp hết hàng
+router.get("/low-stock", role("admin", "manager"), ctrl.getLowStock); // cảnh báo sắp hết hàng
 router.get("/barcode/:barcode", ctrl.getByBarcode); // quét mã vạch POS
 router.get("/", ctrl.getAll);
 router.get("/:id", ctrl.getById);
