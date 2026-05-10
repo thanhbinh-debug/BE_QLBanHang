@@ -31,7 +31,7 @@ const getAll = async (query) => {
     offset,
     include: [
       { model: Customer, as: "customer", attributes: ["id", "name"] },
-      { model: User, as: "user", attributes: ["id", "name"] },
+      { model: User, as: "cashier", attributes: ["id", "name"] },
     ],
     order: [["createdAt", "DESC"]],
   });
@@ -84,7 +84,7 @@ const getById = async (id) => {
     include: [
       { model: OrderItem, as: "items", include: ["product"] },
       "customer",
-      "user",
+      "cashier",
     ],
   });
   if (!order) throw new Error("Không tìm thấy đơn hàng");

@@ -1,5 +1,6 @@
 const svc = require("../services/orderService");
 const { success, error, paginate } = require("../utils/response");
+const { Order, User, OrderItem, Customer } = require("../models");
 
 // Tạo đơn từ màn hình POS
 // Body: { items: [{productId, quantity}], paymentMethod, customerId?, promotionId? }
@@ -62,17 +63,42 @@ exports.getAll = async (req, res) => {
   }
 };
 
-exports.getById = async (id) => {
-  const order = await Order.findByPk(id, {
-    include: [
-      { model: OrderItem, as: "items", include: ["product"] },
-      { model: Customer, as: "customer" },
-      // SỬA Ở ĐÂY: Đổi "user" thành "cashier"
-      { model: User, as: "cashier", attributes: ["id", "name"] },
-    ],
-  });
-  if (!order) throw new Error("Không tìm thấy đơn hàng");
-  return order;
+// exports.getById = async (id) => {
+//   const order = await Order.findByPk(id, {
+//     include: [
+//       { model: OrderItem, as: "items", include: ["product"] },
+//       { model: Customer, as: "customer" },
+//       // SỬA Ở ĐÂY: Đổi "user" thành "cashier"
+//       { model: User, as: "cashier", attributes: ["id", "name"] },
+//     ],
+//   });
+//   if (!order) throw new Error("Không tìm thấy đơn hàng");
+//   return order;
+// };
+
+exports.getById = async (req, res) => {
+  // Phải có cả req và res
+  try {
+    // 1. Lấy ID từ đường dẫn URL (ví dụ: /orders/10 -> id = 10)
+    const { id } = req.params;
+
+    // 2. Truyền biến 'id' (là con số) vào findByPk, KHÔNG truyền req
+    const order = await Order.findByPk(id, {
+      include: [
+        { model: OrderItem, as: "items", include: ["product"] },
+        { model: Customer, as: "customer" },
+        { model: User, as: "cashier", attributes: ["id", "name"] },
+      ],
+    });
+
+    if (!order) {
+      return error(res, "Không tìm thấy đơn hàng", 404);
+    }
+
+    success(res, order, "Lấy chi tiết đơn hàng thành công");
+  } catch (err) {
+    error(res, err.message);
+  }
 };
 
 // Hủy đơn — hoàn lại tồn kho tự động

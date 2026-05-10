@@ -1,6 +1,13 @@
 const { Op } = require("sequelize");
 const { Promotion } = require("../models");
 
+// Lấy tất cả danh sách (Dùng cho trang quản trị) - MỚI THÊM
+const getAll = async () => {
+  return Promotion.findAll({
+    order: [["createdAt", "DESC"]],
+  });
+};
+
 const getActive = async () => {
   const today = new Date();
   return Promotion.findAll({
@@ -19,12 +26,12 @@ const getById = async (id) => {
 };
 
 const create = async (data) => Promotion.create(data);
+
 const update = async (id, data) => {
   const p = await getById(id);
   return p.update(data);
 };
 
-// Tính tiền giảm — gọi từ orderService trước khi tạo đơn
 const applyPromotion = async (promotionId, totalAmount) => {
   if (!promotionId) return 0;
   const promo = await getById(promotionId);
@@ -40,9 +47,9 @@ const applyPromotion = async (promotionId, totalAmount) => {
   let discount =
     promo.type === "percent" ? (totalAmount * promo.value) / 100 : promo.value;
 
-  // Nếu là % thì giảm tối đa không vượt quá maxDiscount
   if (promo.maxDiscount) discount = Math.min(discount, promo.maxDiscount);
   return discount;
 };
 
-module.exports = { getActive, getById, create, update, applyPromotion };
+// Đừng quên thêm getAll vào exports
+module.exports = { getAll, getActive, getById, create, update, applyPromotion };

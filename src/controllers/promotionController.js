@@ -2,14 +2,22 @@ const svc = require("../services/promotionService");
 const { success, error } = require("../utils/response");
 
 // Lấy danh sách KM đang hiệu lực — dùng ở màn hình POS để chọn
-exports.getActive = async (req, res) => {
+exports.getAll = async (req, res) => {
   try {
-    success(res, await svc.getActive());
+    const data = await svc.getAll(); // Gọi hàm getAll trong service
+    success(res, data);
   } catch (err) {
     error(res, err.message);
   }
 };
-
+exports.getActive = async (req, res) => {
+  try {
+    const data = await svc.getActive();
+    success(res, data);
+  } catch (err) {
+    error(res, err.message);
+  }
+};
 exports.getById = async (req, res) => {
   try {
     success(res, await svc.getById(req.params.id));

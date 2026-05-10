@@ -5,6 +5,9 @@ const role = require("../middlewares/roleMiddleware");
 
 router.use(auth);
 
+// Route cho admin quản lý - Lấy tất cả (MỚI THÊM)
+router.get("/", role("admin", "manager"), ctrl.getAll);
+
 // Cashier chỉ xem KM đang hoạt động để áp vào đơn
 router.get("/active", ctrl.getActive);
 router.get("/:id", ctrl.getById);

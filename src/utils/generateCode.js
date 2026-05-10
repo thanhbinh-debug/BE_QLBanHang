@@ -4,4 +4,9 @@ const generateOrderCode = () => {
   return `HD${date}${rand}`; // VD: HD202501151234
 };
 
-module.exports = { generateOrderCode };
+const generateImportCode = () => {
+  const date = new Date().toISOString().slice(0, 10).replace(/-/g, "");
+  const rand = Math.floor(1000 + Math.random() * 9000);
+  return `PNK${date}${rand}`; // VD: PNK202605101234
+};
+module.exports = { generateOrderCode, generateImportCode };
