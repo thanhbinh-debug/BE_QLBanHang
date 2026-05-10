@@ -13,22 +13,66 @@ exports.create = async (req, res) => {
   }
 };
 
+// exports.getAll = async (query) => {
+//   const { limit, offset, page } = getPagination(query);
+//   const where = {};
+
+//   if (query.status) where.status = query.status;
+//   if (query.startDate && query.endDate) {
+//     where.createdAt = {
+//       [Op.between]: [
+//         query.startDate + " 00:00:00",
+//         query.endDate + " 23:59:59",
+//       ],
+//     };
+//   }
+//   if (query.userId) where.userId = query.userId;
+
+//   const result = await Order.findAndCountAll({
+//     where,
+//     limit,
+//     offset,
+//     include: [
+//       { model: Customer, as: "customer", attributes: ["id", "name"] },
+//       // SỬA Ở ĐÂY: Đổi "user" thành "cashier"
+//       { model: User, as: "cashier", attributes: ["id", "name"] },
+//     ],
+//     order: [["createdAt", "DESC"]],
+//   });
+
+//   return { ...result, page, limit };
+// };
+
 exports.getAll = async (req, res) => {
-  // Hỗ trợ query: ?status=completed&startDate=2025-01-01&endDate=2025-01-31
   try {
-    const r = await svc.getAll(req.query);
+    const query = { ...req.query };
+
+    // Nếu là user thường, chỉ cho phép xem đơn hàng của chính họ
+    if (req.user.role === "user") {
+      query.userId = req.user.id;
+    }
+
+    // Gọi trực tiếp service, service sẽ tự gọi getPagination bên trong nó
+    const r = await svc.getAll(query);
+
+    // Trả về dữ liệu qua hàm paginate (hàm này lấy từ utils/response)
     paginate(res, r, r.page, r.limit);
   } catch (err) {
     error(res, err.message);
   }
 };
 
-exports.getById = async (req, res) => {
-  try {
-    success(res, await svc.getById(req.params.id));
-  } catch (err) {
-    error(res, err.message, 404);
-  }
+exports.getById = async (id) => {
+  const order = await Order.findByPk(id, {
+    include: [
+      { model: OrderItem, as: "items", include: ["product"] },
+      { model: Customer, as: "customer" },
+      // SỬA Ở ĐÂY: Đổi "user" thành "cashier"
+      { model: User, as: "cashier", attributes: ["id", "name"] },
+    ],
+  });
+  if (!order) throw new Error("Không tìm thấy đơn hàng");
+  return order;
 };
 
 // Hủy đơn — hoàn lại tồn kho tự động

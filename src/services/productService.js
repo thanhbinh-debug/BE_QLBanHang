@@ -52,11 +52,24 @@ const remove = async (id) => {
 };
 
 // Cảnh báo hàng gần hết (stock <= minStock)
-const getLowStock = async () =>
-  Product.findAll({
-    where: { isActive: true, stock: { [Op.lte]: 5 } },
-    order: [["stock", "ASC"]],
+// const getLowStock = async () =>
+//   Product.findAll({
+//     where: { isActive: true, stock: { [Op.lte]: 5 } },
+//     order: [["stock", "ASC"]],
+//   });
+
+const getLowStock = async () => {
+  return await Product.findAll({
+    where: {
+      isActive: true,
+      stock: {
+        [Op.lt]: 10, // Lấy các sản phẩm có số lượng nhỏ hơn 10 (bạn có thể chỉnh lại số này)
+      },
+    },
+    include: [{ model: Category, as: "category", attributes: ["name"] }],
+    order: [["stock", "ASC"]], // Sản phẩm ít nhất hiện lên đầu
   });
+};
 
 module.exports = {
   getAll,
